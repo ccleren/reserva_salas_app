@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'add_reservation_screen.dart'; // Asegúrate de que esta ruta es correcta según tu estructura
 
 class RoomsListScreen extends StatelessWidget {
   const RoomsListScreen({super.key});
@@ -42,7 +43,20 @@ class RoomsListScreen extends StatelessWidget {
                       ? 'Capacidad: ${data['capacity']}'
                       : 'Capacidad desconocida',
                 ),
-                trailing: const Icon(Icons.add),
+                trailing: IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddReservationPage(
+                          roomId: room.id,
+                          roomName: data['name'] ?? 'Sala sin nombre',
+                        ),
+                      ),
+                    );
+                  },
+                ),
               );
             },
           );
@@ -51,3 +65,4 @@ class RoomsListScreen extends StatelessWidget {
     );
   }
 }
+
