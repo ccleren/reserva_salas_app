@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "969400014959",
+    "project_id": "medac-2cd34",
+    "storage_bucket": "medac-2cd34.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969400014959:android:9e4236851d73960fcb159a",
+        "android_client_info": {
+          "package_name": "com.medac.reservasalas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApQCSV3rDF1dboNKizKt77S0KGYEm5jhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969400014959:android:1f476a54366bf521cb159a",
+        "android_client_info": {
+          "package_name": "com.medac.salas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApQCSV3rDF1dboNKizKt77S0KGYEm5jhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
