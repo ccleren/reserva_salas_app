@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.reserva_salas_app"
-        minSdk = flutter.minSdkVersion
+        minSdk = 21 //flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -40,6 +40,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-messaging-ktx")
 }
 
 flutter {
