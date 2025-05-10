@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'screens/rooms_list_screen.dart'; // 👈 importa tu pantalla aquí
+
+import 'services/auth_service.dart';
+import 'screens/login_page.dart';
+import 'screens/rooms_list_screen.dart'; // tu pantalla principal de salas
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -20,8 +25,18 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home:
-          const RoomsScreen(), // 👈 esta será la primera pantalla que se muestra
+      // Cambia de LoginPage a RoomsScreen automáticamente.
+      home: StreamBuilder(
+        stream: AuthService().userChanges,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+          return snapshot.hasData
+              ? const RoomsScreen()   // usuario autenticado
+              : const LoginPage();    // no autenticado
+        },
+      ),
     );
   }
 }
