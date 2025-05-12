@@ -27,22 +27,20 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+
 dependencies:
   flutter:
     sdk: flutter
+
+  # Firebase sólo para Firestore (si el resto de tu app lo usa)
   firebase_core: ^2.25.0
   cloud_firestore: ^4.13.5
-  firebase_auth: ^5.10.0
-  google_sign_in: ^6.1.5
-  flutter_facebook_auth: ^6.0.2
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
