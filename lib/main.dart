@@ -4,13 +4,11 @@ import 'firebase_options.dart';
 
 import 'services/auth_service.dart';
 import 'screens/login_page.dart';
-import 'screens/rooms_list_screen.dart'; // tu pantalla principal de salas
+import 'screens/rooms_list_screen.dart'; // tu pantalla principal
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -25,16 +23,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      // Cambia de LoginPage a RoomsScreen automáticamente.
-      home: StreamBuilder(
+      home: StreamBuilder<SimpleUser?>(
         stream: AuthService().userChanges,
+        initialData: null, // evita el spinner infinito
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          }
           return snapshot.hasData
-              ? const RoomsScreen()   // usuario autenticado
-              : const LoginPage();    // no autenticado
+              ? const RoomsScreen() // usuario autenticado
+              : const LoginPage(); // no autenticado
         },
       ),
     );
