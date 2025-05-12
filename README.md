@@ -29,5 +29,5 @@ samples, guidance on mobile development, and a full API reference.
 1. Clona el repositorio:
 
 ```bash
-git clone https://github.com/ccleren/reserva-salas.git
+git clone https://github.com/ccleren/reserva_salas_app.git
 cd reserva-salas
