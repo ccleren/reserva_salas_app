@@ -1,42 +1,63 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'dart:async';
+
+class SimpleUser {
+  final String email;
+  const SimpleUser(this.email);
+}
+
+class AuthException implements Exception {
+  final String message;
+  const AuthException(this.message);
+  @override
+  String toString() => message;
+}
 
 class AuthService {
-  final _auth = FirebaseAuth.instance;
-
-  // Emite el User? actual; si es null, está deslogueado.
-  Stream<User?> get userChanges => _auth.authStateChanges();
-
-  // ───── Email/Password ─────
-  Future<UserCredential> signIn(String email, String pass) =>
-      _auth.signInWithEmailAndPassword(email: email, password: pass);
-
-  Future<UserCredential> register(String email, String pass) =>
-      _auth.createUserWithEmailAndPassword(email: email, password: pass);
-
-  // ───── Google ─────
-  Future<UserCredential> signInWithGoogle() async {
-    final googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) throw Exception('Login cancelado');
-    final googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    return _auth.signInWithCredential(credential);
+  // ─── Singleton ───────────────────────────────────────────────────────
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal() {
+    _controller.add(null); // valor inicial
   }
 
-  // ───── Facebook ─────
-  Future<UserCredential> signInWithFacebook() async {
-    final result = await FacebookAuth.instance.login();
-    if (result.status != LoginStatus.success) {
-      throw Exception('Facebook login cancelado');
+  // ─── Configuración fija ──────────────────────────────────────────────
+  static const _allowedUsers = <String>{
+    'carmen@medac.es',
+    'antonio@medac.es',
+    'javi@medac.es',
+    'borja@medac.es',
+    'jose@medac.es',
+    'jesus@medac.es',
+  };
+  static const _password = 'Salas123';
+
+  // ─── Estado interno ──────────────────────────────────────────────────
+  final _controller = StreamController<SimpleUser?>.broadcast();
+  SimpleUser? _currentUser;
+
+  Stream<SimpleUser?> get userChanges => _controller.stream;
+  SimpleUser? get currentUser => _currentUser;
+
+  // ─── Login ───────────────────────────────────────────────────────────
+  Future<void> signIn(String email, String password) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (!_allowedUsers.contains(email.toLowerCase())) {
+      throw const AuthException('Correo no autorizado');
     }
-    final credential =
-        FacebookAuthProvider.credential(result.accessToken!.token);
-    return _auth.signInWithCredential(credential);
+    if (password != _password) {
+      throw const AuthException('Contraseña incorrecta');
+    }
+
+    _currentUser = SimpleUser(email);
+    _controller.add(_currentUser);
   }
 
-  Future<void> signOut() => _auth.signOut();
+  Future<void> register(String email, String password) =>
+      throw const AuthException('Registro deshabilitado');
+
+  Future<void> signOut() async {
+    _currentUser = null;
+    _controller.add(null);
+  }
 }
