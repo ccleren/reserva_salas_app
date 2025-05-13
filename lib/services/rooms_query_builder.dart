@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class RoomsQueryBuilder {
   const RoomsQueryBuilder._();
 
@@ -9,7 +11,7 @@ class RoomsQueryBuilder {
     double? maxPrice,
     List<String>? requiredAmenities,
   }) {
-    var q = FirebaseFirestore.instance.collection('rooms');
+    Query<Map<String, dynamic>> q = FirebaseFirestore.instance.collection('rooms');
 
     if (status != null && status != 'Todas') {
       q = q.where('status', isEqualTo: status);
@@ -37,4 +39,3 @@ class RoomsQueryBuilder {
     return q.orderBy('nameLower');
   }
 }
-

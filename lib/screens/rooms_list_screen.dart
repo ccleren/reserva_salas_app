@@ -1,28 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../services/rooms_query_builder.dart';
+import '../widgets/room_search_delegate.dart';
 import 'all_reservations_screen.dart';
 import 'edit_room_screen.dart';
 
-import '../widgets/room_search_delegate.dart';
-import '../services/rooms_query_builder.dart';
-
-class RoomsScreen extends StatefulWidget {
-  const RoomsScreen({super.key});
+class RoomsListScreen extends StatefulWidget {
+  const RoomsListScreen({super.key});
 
   @override
-  State<RoomsScreen> createState() => _RoomsScreenState();
+  State<RoomsListScreen> createState() => _RoomsListScreenState();
 }
+
 class _RoomsListScreenState extends State<RoomsListScreen> {
+  String selectedStatus = 'Todas';
+  final List<String> statusOptions = ['Todas', 'ocupada', 'disponible'];
+
+  int selectedMinCapacity = 0;
+  final List<int> capacityOptions = [0, 5, 10, 20, 30, 40];
+
   @override
   Widget build(BuildContext context) {
-    final query = RoomsQueryBuilder.build(); // Consulta sin filtros aún
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Salas de trabajo'),
         actions: [
-          //Botón de búsqueda añadido aquí
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
@@ -34,54 +37,6 @@ class _RoomsListScreenState extends State<RoomsListScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: query.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error al cargar las salas'));
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final rooms = snapshot.data?.docs ?? [];
-
-          if (rooms.isEmpty) {
-            return const Center(child: Text('No hay salas disponibles'));
-          }
-
-          return ListView.builder(
-            itemCount: rooms.length,
-            itemBuilder: (context, index) {
-              final room = rooms[index].data() as Map<String, dynamic>;
-              return ListTile(
-                title: Text(room['name'] ?? 'Sin nombre'),
-                subtitle: Text('Capacidad: ${room['capacity'] ?? 0}'),
-                trailing: Text('${room['hourlyPrice'] ?? 0} €/h'),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _RoomsScreenState extends State<RoomsScreen> {
-  String selectedStatus = 'Todas';
-  final List<String> statusOptions = ['Todas', 'ocupada', 'disponible'];
-
-  int selectedMinCapacity = 0;
-  final List<int> capacityOptions = [0, 5, 10, 20, 30, 40];
-
-  @override
-  Widget build(BuildContext context) {
-    final roomsRef = FirebaseFirestore.instance.collection('rooms');
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Todas las salas')),
-
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -109,7 +64,6 @@ class _RoomsScreenState extends State<RoomsScreen> {
           ],
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
@@ -119,22 +73,20 @@ class _RoomsScreenState extends State<RoomsScreen> {
           );
         },
       ),
-
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: DropdownButton<String>(
               value: selectedStatus,
-              items:
-                  statusOptions.map((status) {
-                    return DropdownMenuItem<String>(
-                      value: status,
-                      child: Text(
-                        status[0].toUpperCase() + status.substring(1),
-                      ),
-                    );
-                  }).toList(),
+              items: statusOptions.map((status) {
+                return DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(
+                    status[0].toUpperCase() + status.substring(1),
+                  ),
+                );
+              }).toList(),
               onChanged: (value) {
                 setState(() {
                   selectedStatus = value!;
@@ -146,15 +98,14 @@ class _RoomsScreenState extends State<RoomsScreen> {
             padding: const EdgeInsets.all(8.0),
             child: DropdownButton<int>(
               value: selectedMinCapacity,
-              items:
-                  capacityOptions.map((cap) {
-                    return DropdownMenuItem<int>(
-                      value: cap,
-                      child: Text(
-                        cap == 0 ? 'Todas las capacidades' : 'Capacidad > $cap',
-                      ),
-                    );
-                  }).toList(),
+              items: capacityOptions.map((cap) {
+                return DropdownMenuItem<int>(
+                  value: cap,
+                  child: Text(
+                    cap == 0 ? 'Todas las capacidades' : 'Capacidad > $cap',
+                  ),
+                );
+              }).toList(),
               onChanged: (value) {
                 setState(() {
                   selectedMinCapacity = value!;
@@ -162,10 +113,14 @@ class _RoomsScreenState extends State<RoomsScreen> {
               },
             ),
           ),
-
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: roomsRef.snapshots(),
+              stream: RoomsQueryBuilder.build(
+                      status: selectedStatus == 'Todas' ? null : selectedStatus,
+                      minCapacity: selectedMinCapacity == 0
+                          ? null
+                          : selectedMinCapacity)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(child: Text('❌ Error: ${snapshot.error}'));
@@ -177,20 +132,18 @@ class _RoomsScreenState extends State<RoomsScreen> {
 
                 final docs = snapshot.data!.docs;
 
-                final filteredDocs =
-                    docs.where((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
+                final filteredDocs = docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
 
-                      final statusMatches =
-                          selectedStatus == 'Todas' ||
-                          data['status'] == selectedStatus;
+                  final statusMatches = selectedStatus == 'Todas' ||
+                      data['status'] == selectedStatus;
 
-                      final capacity = data['capacity'] ?? 0;
-                      final capacityMatches =
-                          capacity is int && capacity > selectedMinCapacity;
+                  final capacity = data['capacity'] ?? 0;
+                  final capacityMatches =
+                      capacity is int && capacity > selectedMinCapacity;
 
-                      return statusMatches && capacityMatches;
-                    }).toList();
+                  return statusMatches && capacityMatches;
+                }).toList();
 
                 if (filteredDocs.isEmpty) {
                   return const Center(
@@ -203,12 +156,11 @@ class _RoomsScreenState extends State<RoomsScreen> {
                   itemBuilder: (context, index) {
                     final room = filteredDocs[index];
                     final data = room.data() as Map<String, dynamic>;
-                    final dateTime =
-                        data['reservationDateTime'] != null
-                            ? (data['reservationDateTime'] as Timestamp)
-                                .toDate()
-                                .toLocal()
-                            : null;
+                    final dateTime = data['reservationDateTime'] != null
+                        ? (data['reservationDateTime'] as Timestamp)
+                            .toDate()
+                            .toLocal()
+                        : null;
 
                     final String status = data['status'] ?? 'sin estado';
 
@@ -276,11 +228,10 @@ class _RoomsScreenState extends State<RoomsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (_) => EditRoomScreen(
-                                        roomId: room.id,
-                                        initialData: data,
-                                      ),
+                                  builder: (_) => EditRoomScreen(
+                                    roomId: room.id,
+                                    initialData: data,
+                                  ),
                                 ),
                               );
                             },
@@ -290,29 +241,29 @@ class _RoomsScreenState extends State<RoomsScreen> {
                             onPressed: () async {
                               final confirm = await showDialog<bool>(
                                 context: context,
-                                builder:
-                                    (ctx) => AlertDialog(
-                                      title: const Text('¿Eliminar reserva?'),
-                                      content: const Text(
-                                        'Esta acción no se puede deshacer.',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed:
-                                              () => Navigator.pop(ctx, false),
-                                          child: const Text('Cancelar'),
-                                        ),
-                                        TextButton(
-                                          onPressed:
-                                              () => Navigator.pop(ctx, true),
-                                          child: const Text('Eliminar'),
-                                        ),
-                                      ],
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('¿Eliminar reserva?'),
+                                  content: const Text(
+                                    'Esta acción no se puede deshacer.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancelar'),
                                     ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text('Eliminar'),
+                                    ),
+                                  ],
+                                ),
                               );
 
                               if (confirm == true) {
-                                await roomsRef.doc(room.id).delete();
+                                await FirebaseFirestore.instance
+                                    .collection('rooms')
+                                    .doc(room.id)
+                                    .delete();
                               }
                             },
                           ),

@@ -41,7 +41,8 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   firebase_messaging: ^15.2.5 #Añadido para las notificaciones push
-
+  flutter_local_notifications: ^19.2.0
+  intl: ^0.20.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

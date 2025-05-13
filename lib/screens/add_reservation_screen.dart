@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:intl/intl.dart'; // Si aún no lo tienes
+import '../main.dart'; // Importa subiendo un nivel
 class AddReservationPage extends StatefulWidget {
   final String roomId;
   final String roomName;
@@ -70,7 +71,7 @@ class _AddReservationPageState extends State<AddReservationPage> {
 
     await reservationsRef.add({
       'roomId': widget.roomId,
-      'roomName': widget.roomName, 
+      'roomName': widget.roomName,
       'userId': selectedUserId,
       'userName': selectedUserName,
       'startTime': selectedStartTime,
@@ -78,8 +79,20 @@ class _AddReservationPageState extends State<AddReservationPage> {
       'status': 'active',
       'createdAt': FieldValue.serverTimestamp(),
       'description': '',
+    }).then((docReference) {
+      // ¡Aquí llamamos a la función de notificación!
+      _showLocalNotification(
+        title: 'Nueva Reserva',
+        body: 'Se ha creado una nueva reserva para ${widget.roomName} el ${DateFormat('yyyy-MM-dd HH:mm').format(selectedStartTime!)}.',
+      );
+      Navigator.pop(context); // volver a la pantalla anterior
+    }).catchError((error) {
+      // Aquí puedes añadir un manejo de errores si la reserva no se guarda
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar la reserva: $error')),
+      );
     });
-
+  }
     Navigator.pop(context); // volver a la pantalla anterior
   }
 
