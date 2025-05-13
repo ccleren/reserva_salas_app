@@ -4,11 +4,68 @@ import 'package:flutter/material.dart';
 import 'all_reservations_screen.dart';
 import 'edit_room_screen.dart';
 
+import '../widgets/room_search_delegate.dart';
+import '../services/rooms_query_builder.dart';
+
 class RoomsScreen extends StatefulWidget {
   const RoomsScreen({super.key});
 
   @override
   State<RoomsScreen> createState() => _RoomsScreenState();
+}
+class _RoomsListScreenState extends State<RoomsListScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final query = RoomsQueryBuilder.build(); // Consulta sin filtros aún
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Salas de trabajo'),
+        actions: [
+          //Botón de búsqueda añadido aquí
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: RoomSearchDelegate(),
+              );
+            },
+          ),
+        ],
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: query.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error al cargar las salas'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final rooms = snapshot.data?.docs ?? [];
+
+          if (rooms.isEmpty) {
+            return const Center(child: Text('No hay salas disponibles'));
+          }
+
+          return ListView.builder(
+            itemCount: rooms.length,
+            itemBuilder: (context, index) {
+              final room = rooms[index].data() as Map<String, dynamic>;
+              return ListTile(
+                title: Text(room['name'] ?? 'Sin nombre'),
+                subtitle: Text('Capacidad: ${room['capacity'] ?? 0}'),
+                trailing: Text('${room['hourlyPrice'] ?? 0} €/h'),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _RoomsScreenState extends State<RoomsScreen> {
