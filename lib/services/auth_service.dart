@@ -39,7 +39,7 @@ class AuthService {
   SimpleUser? get currentUser => _currentUser;
 
   // ─── Login ───────────────────────────────────────────────────────────
-  Future<void> signIn(String email, String password) async {
+  Future<String?> signIn(String email, String password) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (!_allowedUsers.contains(email.toLowerCase())) {
@@ -51,6 +51,7 @@ class AuthService {
 
     _currentUser = SimpleUser(email);
     _controller.add(_currentUser);
+    return email; // Devolvemos el email como userId
   }
 
   Future<void> register(String email, String password) =>

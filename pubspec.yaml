@@ -29,18 +29,18 @@ environment:
 # versions available, run `flutter pub outdated`.
 
 dependencies:
-  firebase_auth: ^4.16.0
+  firebase_auth: ^5.5.3
   google_sign_in: ^6.1.5
   flutter_facebook_auth: ^6.0.2
   flutter:
     sdk: flutter
 
   # Firebase sólo para Firestore (si el resto de tu app lo usa)
-  firebase_core: ^2.25.0
-  cloud_firestore: ^4.13.5
+  firebase_core: ^3.13.0
+  cloud_firestore: ^5.6.7
 
   cupertino_icons: ^1.0.8
-  firebase_messaging: ^14.7.10 #Añadido para las notificaciones push
+  firebase_messaging: ^15.2.5 #Añadido para las notificaciones push
 
 dev_dependencies:
   flutter_test:
